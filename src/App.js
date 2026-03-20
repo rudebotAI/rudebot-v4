@@ -2,7 +2,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   DOWDY FINANCIAL AUTOMATED EXCHANGE — STOCK TRADING ENGINE
+   DOWDY FINANCIAL STOCK BOT — STOCK TRADING ENGINE
    Multi-strategy equity bot: Momentum · Dividend · Mean Reversion · Sector Rotation
    ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -379,7 +379,7 @@ export default function App() {
     setPositions([]); setTrades([]); setLogs([]); setEquityCurve([capital]); setScanCount(0);
     stateRef.current = {cash:capital, positions:[], portfolio:capital};
     setIsRunning(true);
-    addLog(`DOWDY FINANCIAL DEPLOYED — $${capital.toLocaleString()} capital armed`, "buy");
+    addLog(`DOWDY FINANCIAL STOCK BOT DEPLOYED — $${capital.toLocaleString()} capital armed`, "buy");
     addLog(`Strategies: MOMENTUM · DIVIDEND · MEAN_REV · SECTOR_ROTATION`, "info");
     addLog(`Universe: ${ALL_STOCKS.length} instruments across ${[...new Set(ALL_STOCKS.map(s=>s.sector))].length} sectors`, "info");
     addLog(`Risk: SL 4% | TP 15% | Trail 3% | Max Pos ${RULES.MAX_POSITIONS} | Sector Cap ${RULES.MAX_SECTOR_PCT*100}%`, "info");
@@ -389,7 +389,7 @@ export default function App() {
   const stopBot = () => {
     setIsRunning(false);
     if(scanRef.current){clearInterval(scanRef.current);scanRef.current=null;}
-    addLog("Dowdy Financial HALTED — positions held open","warn");
+    addLog("Dowdy Financial Stock Bot HALTED — positions held open","warn");
   };
 
   const getAIAnalysis = async () => {
@@ -408,7 +408,7 @@ export default function App() {
       const res = await fetch("/api/analyze",{
         method:"POST",headers:{"Content-Type":"application/json"},
         body:JSON.stringify({
-          prompt:`DOWDY FINANCIAL STOCK INTEL BRIEF (${dataSource === "LIVE" ? "LIVE MARKET DATA" : "SIMULATED DATA"}):\n\nPortfolio: $${fmt(portfolio)} | Start: $${fmt(sc)} | P&L: ${pnl>=0?"+":""}$${fmt(pnl)} (${fmtPct((pnl/sc)*100)})\nRegime: ${regime} | Win: ${closedT>0?((winT/closedT)*100).toFixed(0):"--"}% (${winT}/${closedT})\nATH: $${fmt(allTimeHigh)} | DD: ${(((allTimeHigh-portfolio)/allTimeHigh)*100).toFixed(1)}%\nSector Alloc: ${sectorStr||"None"}\n\nPositions:\n${holdings||"None"}\n\nTop Candidates:\n${candidates}\n\n1) Performance vs 3-5% monthly target\n2) Cut/hold each position — no mercy\n3) Top 3 highest-conviction entries NOW with size\n4) Sector rotation plays\n5) Biggest risk to this book`
+          prompt:`DOWDY FINANCIAL STOCK BOT INTEL BRIEF (${dataSource === "LIVE" ? "LIVE MARKET DATA" : "SIMULATED DATA"}):\n\nPortfolio: $${fmt(portfolio)} | Start: $${fmt(sc)} | P&L: ${pnl>=0?"+":""}$${fmt(pnl)} (${fmtPct((pnl/sc)*100)})\nRegime: ${regime} | Win: ${closedT>0?((winT/closedT)*100).toFixed(0):"--"}% (${winT}/${closedT})\nATH: $${fmt(allTimeHigh)} | DD: ${(((allTimeHigh-portfolio)/allTimeHigh)*100).toFixed(1)}%\nSector Alloc: ${sectorStr||"None"}\n\nPositions:\n${holdings||"None"}\n\nTop Candidates:\n${candidates}\n\n1) Performance vs 3-5% monthly target\n2) Cut/hold each position — no mercy\n3) Top 3 highest-conviction entries NOW with size\n4) Sector rotation plays\n5) Biggest risk to this book`
         })
       });
       const data = await res.json();
@@ -462,7 +462,7 @@ export default function App() {
             {isRunning && <div style={{position:"absolute",inset:-3,borderRadius:"50%",border:`2px solid ${C.red}30`}} className="rb-pulse"/>}
           </div>
           <span style={{fontFamily:"'Instrument Serif',serif",fontSize:22,fontWeight:400,color:C.text,fontStyle:"italic"}}>Dowdy Financial</span>
-          <span style={{color:C.textMute,fontSize:10,letterSpacing:".14em",fontWeight:500,textTransform:"uppercase",marginTop:4}}>automated exchange</span>
+          <span style={{color:C.textMute,fontSize:10,letterSpacing:".14em",fontWeight:500,textTransform:"uppercase",marginTop:4}}>stock bot</span>
           {started && <span style={{padding:"3px 8px",fontSize:9,fontWeight:700,letterSpacing:".08em",borderRadius:10,
             background:dataSource==="LIVE"?"#0a2e1a":"#2a1a0a",
             color:dataSource==="LIVE"?C.green:C.amber,
