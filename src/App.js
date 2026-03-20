@@ -2,7 +2,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   RUDEBOT v4 — STOCK TRADING ENGINE
+   DOWDY FINANCIAL AUTOMATED EXCHANGE — STOCK TRADING ENGINE
    Multi-strategy equity bot: Momentum · Dividend · Mean Reversion · Sector Rotation
    ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -76,7 +76,15 @@ function getStrategy(stock) {
   return "MEAN_REV";
 }
 
-function generateStockData(stock) {
+// ── ALPACA LIVE DATA FETCHER ──
+async function fetchAlpacaData(symbols) {
+  const res = await fetch(`/api/stocks?symbols=${symbols.join(",")}`);
+  if (!res.ok) throw new Error(`Alpaca API ${res.status}`);
+  return res.json(); // { NVDA: { current, change, rsi, macd, ... }, ... }
+}
+
+// ── SIMULATED DATA (fallback when market is closed or API unavailable) ──
+function generateSimulatedPrices() {
   const base = 50 + Math.random() * 400;
   const prices = [];
   let p = base;
@@ -84,41 +92,45 @@ function generateStockData(stock) {
     p = p * (1 + (Math.random() - 0.47) * 0.025);
     prices.push(parseFloat(p.toFixed(2)));
   }
+  return prices;
+}
+
+function computeIndicators(prices, volRatio) {
   const current = prices[prices.length - 1];
   const prev = prices[prices.length - 2];
   const change = parseFloat(((current - prev) / prev * 100).toFixed(2));
-  // RSI 14
   let gains = 0, losses = 0;
-  for (let i = 1; i <= 14; i++) {
-    const d = prices[prices.length - i] - prices[prices.length - i - 1];
-    if (d > 0) gains += d; else losses += Math.abs(d);
+  if (prices.length >= 15) {
+    for (let i = 1; i <= 14; i++) {
+      const d = prices[prices.length - i] - prices[prices.length - i - 1];
+      if (d > 0) gains += d; else losses += Math.abs(d);
+    }
   }
   const rsi = parseFloat((100 - 100 / (1 + (gains/14) / (losses/14 || 0.001))).toFixed(1));
-  // MACD
   const ema12 = prices.slice(-12).reduce((a,b)=>a+b,0)/12;
   const ema26 = prices.slice(-26).reduce((a,b)=>a+b,0)/26;
   const macd = parseFloat((ema12 - ema26).toFixed(2));
-  // SMAs
   const sma20 = parseFloat((prices.slice(-20).reduce((a,b)=>a+b,0)/20).toFixed(2));
   const sma50 = parseFloat((prices.slice(-50).reduce((a,b)=>a+b,0)/50).toFixed(2));
-  // Bollinger position
   const sma20arr = prices.slice(-20);
   const stdDev = Math.sqrt(sma20arr.reduce((a,v)=>a+Math.pow(v-sma20,2),0)/20);
   const bbUpper = sma20 + 2*stdDev;
   const bbLower = sma20 - 2*stdDev;
   const bbPos = parseFloat(((current - bbLower) / (bbUpper - bbLower || 1) * 100).toFixed(0));
-  // Volume ratio
-  const volRatio = parseFloat((0.5 + Math.random() * 2).toFixed(2));
-  // ATR (simplified)
   let atrSum = 0;
-  for (let i = 1; i <= 14; i++) atrSum += Math.abs(prices[prices.length-i] - prices[prices.length-i-1]);
+  if (prices.length >= 15) {
+    for (let i = 1; i <= 14; i++) atrSum += Math.abs(prices[prices.length-i] - prices[prices.length-i-1]);
+  }
   const atr = parseFloat((atrSum / 14).toFixed(2));
   const atrPct = parseFloat((atr / current * 100).toFixed(2));
-  // 5-day & 20-day return
-  const ret5d = parseFloat(((current / prices[prices.length-6] - 1) * 100).toFixed(2));
-  const ret20d = parseFloat(((current / prices[prices.length-21] - 1) * 100).toFixed(2));
+  const ret5d = prices.length >= 6 ? parseFloat(((current / prices[prices.length-6] - 1) * 100).toFixed(2)) : 0;
+  const ret20d = prices.length >= 21 ? parseFloat(((current / prices[prices.length-21] - 1) * 100).toFixed(2)) : 0;
+  return { current, change, rsi, macd, sma20, sma50, bbPos, volRatio: volRatio ?? parseFloat((0.5 + Math.random() * 2).toFixed(2)), atr, atrPct, ret5d, ret20d, prices };
+}
 
-  // Composite score
+// ── SCORING & SIGNALS (works with both real and simulated data) ──
+function scoreStock(stock, ind) {
+  const { current, change, rsi, macd, sma20, sma50, volRatio, bbPos, atrPct, ret5d } = ind;
   let score = 50;
   if (rsi < 32) score += 20; else if (rsi < 42) score += 12; else if (rsi < 50) score += 5;
   if (rsi > 75) score -= 18; else if (rsi > 68) score -= 8;
@@ -126,19 +138,18 @@ function generateStockData(stock) {
   if (current > sma20) score += 8; else score -= 5;
   if (sma20 > sma50) score += 8; else score -= 5;
   if (volRatio > 1.5) score += 8; else if (volRatio > 1.2) score += 4;
-  if (bbPos < 20) score += 10; // near lower BB = oversold
+  if (bbPos < 20) score += 10;
   if (bbPos > 85) score -= 8;
-  if (ret5d > 2 && ret5d < 8) score += 6; // healthy momentum
-  if (ret5d < -5) score -= 8; // falling knife
+  if (ret5d > 2 && ret5d < 8) score += 6;
+  if (ret5d < -5) score -= 8;
   if (stock.growth > 20) score += 10; else if (stock.growth > 10) score += 5;
   if (stock.divYield > 3) score += 6;
   if (stock.pe && stock.pe < 15) score += 8; else if (stock.pe > 50) score -= 5;
   if (change > 1.5) score += 5; else if (change < -3) score -= 12;
-  if (atrPct < 1.5) score += 3; // low vol = stable
-
+  if (atrPct < 1.5) score += 3;
   const strategy = getStrategy(stock);
   if (strategy === "MOMENTUM") score = Math.round(score * RULES.MOMENTUM_BOOST);
-  if (strategy === "ROTATION") score += 5; // slight ETF preference for stability
+  if (strategy === "ROTATION") score += 5;
   score = Math.min(100, Math.max(0, score));
 
   const buySignals = [];
@@ -159,7 +170,34 @@ function generateStockData(stock) {
   if (bbPos > 90) sellSignals.push("BB_HI");
   if (ret5d < -4) sellSignals.push("WEAK_5D");
 
-  return { ...stock, current, change, rsi, macd, sma20, sma50, volRatio, score, buySignals, sellSignals, strategy, prices, bbPos, atr, atrPct, ret5d, ret20d };
+  return { ...stock, ...ind, score, buySignals, sellSignals, strategy };
+}
+
+// ── BUILD STOCK DATA (live or fallback) ──
+async function buildStockData(addLog) {
+  const symbols = ALL_STOCKS.map(s => s.symbol);
+  let alpaca = null;
+  let isLive = false;
+  try {
+    alpaca = await fetchAlpacaData(symbols);
+    isLive = true;
+  } catch (e) {
+    if (addLog) addLog(`⚠ Alpaca unavailable (${e.message}) — using simulated data`, "warn");
+  }
+  const newData = {};
+  ALL_STOCKS.forEach(s => {
+    const raw = alpaca && alpaca[s.symbol];
+    if (raw && raw.current > 0) {
+      // Live Alpaca data — indicators already computed server-side
+      newData[s.symbol] = scoreStock(s, raw);
+    } else {
+      // Fallback: simulated
+      const prices = generateSimulatedPrices();
+      const ind = computeIndicators(prices);
+      newData[s.symbol] = scoreStock(s, ind);
+    }
+  });
+  return { newData, isLive };
 }
 
 function fmt(n) { return (n||0).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}); }
@@ -222,6 +260,7 @@ export default function App() {
   const [stockData, setStockData] = useState({});
   const [isRunning, setIsRunning] = useState(false);
   const [regime, setRegime] = useState("BULL");
+  const [dataSource, setDataSource] = useState("SIM");
   const [activeTab, setActiveTab] = useState("command");
   const [lastScan, setLastScan] = useState(null);
   const [analysis, setAnalysis] = useState("");
@@ -238,14 +277,15 @@ export default function App() {
     setLogs(p=>[{msg,type,time:new Date().toLocaleTimeString()},...p].slice(0,500));
   },[]);
 
-  const runEngine = useCallback((cashIn, posIn, pvIn) => {
+  const runEngine = useCallback(async (cashIn, posIn, pvIn) => {
     setLastScan(new Date());
     setScanCount(c=>c+1);
     const c = cashIn !== undefined ? cashIn : stateRef.current.cash;
     const pos = posIn !== undefined ? posIn : stateRef.current.positions;
     const pv = pvIn !== undefined ? pvIn : stateRef.current.portfolio;
-    const newData = {};
-    ALL_STOCKS.forEach(s => { newData[s.symbol] = generateStockData(s); });
+    const { newData, isLive } = await buildStockData(addLog);
+    if (isLive) setDataSource("LIVE");
+    else setDataSource("SIM");
     // Regime detection
     const scores = Object.values(newData).map(d=>d.score);
     const avgScore = scores.reduce((a,b)=>a+b,0)/scores.length;
@@ -339,17 +379,17 @@ export default function App() {
     setPositions([]); setTrades([]); setLogs([]); setEquityCurve([capital]); setScanCount(0);
     stateRef.current = {cash:capital, positions:[], portfolio:capital};
     setIsRunning(true);
-    addLog(`RUDEBOT v4 DEPLOYED — $${capital.toLocaleString()} capital armed`, "buy");
+    addLog(`DOWDY FINANCIAL DEPLOYED — $${capital.toLocaleString()} capital armed`, "buy");
     addLog(`Strategies: MOMENTUM · DIVIDEND · MEAN_REV · SECTOR_ROTATION`, "info");
     addLog(`Universe: ${ALL_STOCKS.length} instruments across ${[...new Set(ALL_STOCKS.map(s=>s.sector))].length} sectors`, "info");
     addLog(`Risk: SL 4% | TP 15% | Trail 3% | Max Pos ${RULES.MAX_POSITIONS} | Sector Cap ${RULES.MAX_SECTOR_PCT*100}%`, "info");
-    setTimeout(()=>{ runEngine(capital,[],capital); scanRef.current=setInterval(()=>runEngine(),RULES.SCAN_INTERVAL); },200);
+    setTimeout(async ()=>{ await runEngine(capital,[],capital); scanRef.current=setInterval(()=>runEngine(),RULES.SCAN_INTERVAL); },200);
   };
 
   const stopBot = () => {
     setIsRunning(false);
     if(scanRef.current){clearInterval(scanRef.current);scanRef.current=null;}
-    addLog("RudeBot HALTED — positions held open","warn");
+    addLog("Dowdy Financial HALTED — positions held open","warn");
   };
 
   const getAIAnalysis = async () => {
@@ -365,16 +405,14 @@ export default function App() {
     const candidates = Object.values(stockData).sort((a,b)=>b.score-a.score).slice(0,6).map(d=>`${d.symbol}(${d.strategy}): Score ${d.score}, RSI ${d.rsi}, BB ${d.bbPos}%, ${d.buySignals.join("|")}`).join("\n");
     const sectorStr = Object.entries(sectorBreakdown).sort((a,b)=>b[1]-a[1]).map(([s,v])=>`${s}: $${fmtK(v)} (${(v/portfolio*100).toFixed(0)}%)`).join(", ");
     try {
-      const res = await fetch("https://api.anthropic.com/v1/messages",{
+      const res = await fetch("/api/analyze",{
         method:"POST",headers:{"Content-Type":"application/json"},
         body:JSON.stringify({
-          model:"claude-sonnet-4-20250514",max_tokens:1000,
-          system:"You are a ruthless quantitative stock trading analyst. Concise, aggressive, data-first. No disclaimers. Use numbered sections. Bold convictions only.",
-          messages:[{role:"user",content:`RUDEBOT v4 STOCK INTEL BRIEF:\n\nPortfolio: $${fmt(portfolio)} | Start: $${fmt(sc)} | P&L: ${pnl>=0?"+":""}$${fmt(pnl)} (${fmtPct((pnl/sc)*100)})\nRegime: ${regime} | Win: ${closedT>0?((winT/closedT)*100).toFixed(0):"--"}% (${winT}/${closedT})\nATH: $${fmt(allTimeHigh)} | DD: ${(((allTimeHigh-portfolio)/allTimeHigh)*100).toFixed(1)}%\nSector Alloc: ${sectorStr||"None"}\n\nPositions:\n${holdings||"None"}\n\nTop Candidates:\n${candidates}\n\n1) Performance vs 3-5% monthly target\n2) Cut/hold each position — no mercy\n3) Top 3 highest-conviction entries NOW with size\n4) Sector rotation plays\n5) Biggest risk to this book`}]
+          prompt:`DOWDY FINANCIAL STOCK INTEL BRIEF (${dataSource === "LIVE" ? "LIVE MARKET DATA" : "SIMULATED DATA"}):\n\nPortfolio: $${fmt(portfolio)} | Start: $${fmt(sc)} | P&L: ${pnl>=0?"+":""}$${fmt(pnl)} (${fmtPct((pnl/sc)*100)})\nRegime: ${regime} | Win: ${closedT>0?((winT/closedT)*100).toFixed(0):"--"}% (${winT}/${closedT})\nATH: $${fmt(allTimeHigh)} | DD: ${(((allTimeHigh-portfolio)/allTimeHigh)*100).toFixed(1)}%\nSector Alloc: ${sectorStr||"None"}\n\nPositions:\n${holdings||"None"}\n\nTop Candidates:\n${candidates}\n\n1) Performance vs 3-5% monthly target\n2) Cut/hold each position — no mercy\n3) Top 3 highest-conviction entries NOW with size\n4) Sector rotation plays\n5) Biggest risk to this book`
         })
       });
       const data = await res.json();
-      setAnalysis(data.content?.[0]?.text||"Unavailable.");
+      setAnalysis(data.text||"Unavailable.");
     } catch(e){setAnalysis(`Error: ${e.message}`);}
     setIsAnalyzing(false);
   };
@@ -423,8 +461,13 @@ export default function App() {
             <div style={{width:10,height:10,borderRadius:"50%",background:isRunning?C.red:C.textFaint}} className={isRunning?"rb-pulse":""}/>
             {isRunning && <div style={{position:"absolute",inset:-3,borderRadius:"50%",border:`2px solid ${C.red}30`}} className="rb-pulse"/>}
           </div>
-          <span style={{fontFamily:"'Instrument Serif',serif",fontSize:28,fontWeight:400,color:C.text,fontStyle:"italic"}}>RudeBot</span>
-          <span style={{color:C.textMute,fontSize:10,letterSpacing:".14em",fontWeight:500,textTransform:"uppercase",marginTop:4}}>v4.0 · stocks</span>
+          <span style={{fontFamily:"'Instrument Serif',serif",fontSize:22,fontWeight:400,color:C.text,fontStyle:"italic"}}>Dowdy Financial</span>
+          <span style={{color:C.textMute,fontSize:10,letterSpacing:".14em",fontWeight:500,textTransform:"uppercase",marginTop:4}}>automated exchange</span>
+          {started && <span style={{padding:"3px 8px",fontSize:9,fontWeight:700,letterSpacing:".08em",borderRadius:10,
+            background:dataSource==="LIVE"?"#0a2e1a":"#2a1a0a",
+            color:dataSource==="LIVE"?C.green:C.amber,
+            border:`1px solid ${dataSource==="LIVE"?"#1a4a2a":"#4a3a1a"}`
+          }}>{dataSource==="LIVE"?"● LIVE":"◌ SIM"}</span>}
           {started && <span style={{padding:"4px 12px",fontSize:10,fontWeight:600,letterSpacing:".06em",borderRadius:20,
             background:regime==="BULL"?C.greenBg:regime==="BEAR"?C.redBg:C.amberBg,
             color:regime==="BULL"?C.green:regime==="BEAR"?C.red:C.amber,
