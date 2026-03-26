@@ -1,7 +1,7 @@
 """
 Paper Trading Engine -- Simulates trades without real money.
 Tracks entries, exits, P&L, and win rate.
-b""
+"""
 
 import json
 import hashlib
