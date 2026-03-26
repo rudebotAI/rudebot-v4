@@ -148,6 +148,6 @@ news_sentinel:
 
 logging:
   trade_log: logs/trades.json
-  PerLrmance_log: logs/performance.json
+  performance_log: logs/performance.json
   state_file: logs/state.json
   verbose: true                   # Print detailed scan output
