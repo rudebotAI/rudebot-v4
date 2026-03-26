@@ -1,61 +1,59 @@
-# Prediction Market Quant Bot -- Configuration
-# =============================================
-# IMPORTANT: Fill in your API keys before running.
-# The bot starts in PAPER mode -- no real money until you change it.
+# Prediction Market Quant Bot -- Backtest Configuration
+# =====================================================
+# Copy this to backtest/config.yaml and fill in your keys.
 
-mode: paper  # paper | live (ONLY change to live after validated results)
+mode: paper
 
 polymarket:
-  private_key: ""          # Your Polygon wallet private key (for signing orders)
-  chain_id: 137            # Polygon mainnet
-  funder_address: ""       # Your wallet address
+  private_key: ""
+  chain_id: 137
+  funder_address: ""
 
 kalshi:
-  email: "pbmzx64t4c@privaterelay.appleid.com"
-  api_key: "f1d93f72-4d6b-4be7-811f-f7004ee509a6"
+  email: ""
+  api_key: ""
 
 telegram:
-  bot_token: "8677098190:AAHR9k7rUfuAQ0TfXhJzoxOt8KIopDplQiM"
-  chat_id: "5063878233"
-  require_confirm: false   # CHANGED: was true -- bot now auto-executes in paper mode
-  send_scan_summary: true  # Send periodic scan summaries
+  bot_token: ""
+  chat_id: ""
+  require_confirm: true
+  send_scan_summary: true
 
 coinbase:
-  price_cache_ttl: 30        # Cache spot prices for 30 seconds
-  # No API key needed -- public price data
+  price_cache_ttl: 30
 
 research:
-  scrapecreators_api_key: ""  # Covers Reddit, TikTok, Instagram (scrapecreators.com)
-  xai_api_key: ""             # X/Twitter search via xAI Grok (api.x.ai)
-  brave_api_key: ""           # Web search via Brave (brave.com/search/api)
-  research_cache_ttl: 1800    # Cache research results for 30 min
-  research_sources:           # Which sources to use
+  scrapecreators_api_key: ""
+  xai_api_key: ""
+  brave_api_key: ""
+  research_cache_ttl: 1800
+  research_sources:
     - reddit
     - web
     - hackernews
     - x
 
 strategy:
-  min_ev_threshold: 0.05   # Minimum EV gap to trigger signal (5%)
-  kelly_fraction: 0.25     # Quarter-Kelly (safety multiplier)
-  max_position_usd: 10.00  # Max per-trade size during testing
-  scan_interval_sec: 120   # How often to scan all markets (seconds)
-  min_market_volume: 5000  # Skip markets below this 24h volume
-  min_liquidity_depth: 50  # Skip markets with LMSR b < this value
-  platforms:               # Which platforms to scan
-    - kalshi               # CHANGED: removed polymarket (no wallet keys configured)
+  min_ev_threshold: 0.05
+  kelly_fraction: 0.25
+  max_position_usd: 10.00
+  scan_interval_sec: 120
+  min_market_volume: 5000
+  min_liquidity_depth: 50
+  platforms:
+    - kalshi
 
 risk:
-  max_daily_loss_usd: 20.00      # Auto-stop if daily loss exceeds this
-  max_open_positions: 5           # Max simultaneous positions
-  max_consecutive_losses: 3       # Pause after N consecutive losses
-  max_portfolio_pct: 0.10         # Never risk >10% of bankroll on one bet
-  bankroll_usd: 50.00             # Starting capital (for Kelly calculations)
-  cooldown_after_stop_min: 60     # Wait time after circuit breaker triggers
-  min_market_liquidity: 10000     # Skip markets with < $10K liquidity (from Polymarket MCP)
-  max_spread_tolerance: 0.05      # Skip markets with > 5% bid-ask spread
+  max_daily_loss_usd: 20.00
+  max_open_positions: 5
+  max_consecutive_losses: 3
+  max_portfolio_pct: 0.10
+  bankroll_usd: 50.00
+  cooldown_after_stop_min: 60
+  min_market_liquidity: 10000
+  max_spread_tolerance: 0.05
 
 logging:
   trade_log: logs/trades.json
   performance_log: logs/performance.json
-  verbose: true                   # Print detailed scan output
+  verbose: true
