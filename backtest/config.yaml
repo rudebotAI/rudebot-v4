@@ -57,5 +57,5 @@ risk:
 
 logging:
   trade_log: logs/trades.json
-  PerLrmance_log: logs/performance.json
+  performance_log: logs/performance.json
   verbose: true                   # Print detailed scan output
