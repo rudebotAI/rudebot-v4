@@ -71,7 +71,7 @@ class StateStore:
     # ── Positions ──
 
     def add_position(self, position: dict):
-       """Track a new open position."""
+        """Track a new open position."""
         self.state["positions"].append(position)
         self._save()
 
@@ -93,8 +93,8 @@ class StateStore:
 
     # ── P&L ──
 
-    def _record_pnl(self, pnl: float, is_win: bool):
-       """Record a trade result."""
+    def record_pnl(self, pnl: float, is_win: bool):
+        """Record a trade result."""
         self.state["total_pnl"] += pnl
         self.state["daily_pnl"] += pnl
         self.state["total_trades"] += 1
@@ -120,7 +120,7 @@ class StateStore:
             "win_rate": (self.state["wins"] / total * 100) if total > 0 else 0,
         }
 
-   # ── Price Cache ──
+    # ── Price Cache ──
 
     def update_price(self, market_id: str, price: float, source: str = ""):
         """Cache a market price."""
@@ -133,7 +133,7 @@ class StateStore:
         # Caller can batch save via save()
 
     def get_cached_price(self, market_id: str, max_age: int = 120) -> Optional[float]:
-       """Get cached price if fresh enough."""
+        """Get cached price if fresh enough."""
         entry = self.state["price_cache"].get(market_id)
         if entry and (time.time() - entry["time"]) < max_age:
             return entry["price"]
@@ -142,7 +142,7 @@ class StateStore:
     # ── Market Snapshots ──
 
     def save_snapshot(self, markets: list, opportunities: list, arbs: list):
-       """Save a scan cycle snapshot (keep last 10)."""
+        """Save a scan cycle snapshot (keep last 10)."""
         self.state["market_snapshots"].append({
             "time": time.strftime("%H:%M:%S"),
             "total_markets": len(markets),
@@ -181,7 +181,7 @@ class StateStore:
         return {
             **self.get_pnl_summary(),
             "open_positions": len(self.state["positions"]),
-            "wrallet_balance": self.state["wrallet_balance"],
+            "wallet_balance": self.state["wallet_balance"],
             "scan_count": self.state["scan_count"],
             "last_scan": self.state["last_scan_time"],
             "recent_errors": self.state["errors"][-5:],
