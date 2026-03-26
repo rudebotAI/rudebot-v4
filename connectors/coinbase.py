@@ -82,10 +82,10 @@ class CoinbaseConnector:
             return None
 
     def get_spot_price(self, pair: str = "BTC-USD") -> Optional[float]:
-       """
+        """
         Get current spot price. Tries Coinbase v2, then Binance fallback.
         Cached for cache_ttl seconds.
-       """
+        """
         cache_key = f"spot_{pair}"
         if cache_key in self.cache:
             cached = self.cache[cache_key]
@@ -140,7 +140,7 @@ class CoinbaseConnector:
         return self.get_spot_price(pair)
 
     def get_candles(self, product_id: str = "BTC-USD", granularity: int = 300, limit: int = 50) -> list:
-       """
+        """
         Get OHLCV candles. Tries Coinbase Advanced Trade API, then Binance.
         Returns: list of [time, low, high, open, close, volume] (newest first).
         """
@@ -162,7 +162,7 @@ class CoinbaseConnector:
 
     def _coinbase_advanced_candles(self, product_id: str, granularity: int, limit: int) -> list:
         """Fetch candles from Coinbase Advanced Trade API (v3)."""
-        gran_str = _GRANUTARITY_MAP.get(granularity)
+        gran_str = _GRANULARITY_MAP.get(granularity)
         if not gran_str:
             gran_str = "FIVE_MINUTE"
 
@@ -275,7 +275,7 @@ class CoinbaseConnector:
         Compute short-term price momentum from 5-min candles.
         Returns direction, % change, and volatility.
         Useful for crypto-related prediction market signals.
-       """
+        """
         candles = self.get_candles(product_id, granularity=300, limit=periods)
         if len(candles) < 2:
             return None
