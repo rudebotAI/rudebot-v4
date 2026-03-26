@@ -1,5 +1,5 @@
 """
-Telegram Alert System — Sends trade signals and handles confirm/skip buttons.
+Telegram Alert System -- Sends trade signals and handles confirm/skip buttons.
 Reuses patterns from the copy trade bot we built earlier.
 """
 
@@ -48,7 +48,7 @@ class TelegramAlerts:
         except Exception as e:
             if self._api_reachable is None:
                 self._api_reachable = False
-                logger.warning(f"Telegram API unreachable — skipping: {e}")
+                logger.warning(f"Telegram API unreachable -- skipping: {e}")
             return {}
 
     def _get(self, method: str, params: str = "") -> dict:
@@ -65,7 +65,7 @@ class TelegramAlerts:
         except Exception as e:
             if self._api_reachable is None:
                 self._api_reachable = False
-                logger.warning(f"Telegram API unreachable — skipping: {e}")
+                logger.warning(f"Telegram API unreachable -- skipping: {e}")
             return {}
 
     def send(self, text: str, reply_markup=None) -> dict:
@@ -89,7 +89,7 @@ class TelegramAlerts:
         question = opp.get("question", "Unknown")[:80]
 
         msg = (
-            f"<b>Signal Detected</b>\n"
+            f"<b>Signal Detected</b> l"
             f"{'─' * 32}\n"
             f"<b>Market:</b> {question}\n"
             f"<b>Platform:</b> {platform.title()}\n"
@@ -99,7 +99,7 @@ class TelegramAlerts:
             f"<b>Kelly says:</b> ${sizing.get('size_usd', 0):.2f} "
             f"({sizing.get('shares', 0):.1f} shares)\n"
             f"<b>Kelly raw:</b> {sizing.get('kelly_raw', 0):.3f} "
-            f"→ frac: {sizing.get('kelly_fractional', 0):.3f}\n"
+            f"-> frac: {sizing.get('kelly_fractional', 0):.3f}\n"
             f"{'─' * 32}\n"
         )
 
@@ -137,8 +137,8 @@ class TelegramAlerts:
         """Notify that a trade was opened."""
         mode = "PAPER" if trade.get("status") == "open" else "LIVE"
         self.send(
-            f"<b>{mode} Trade Opened</b>\n"
-            f"{trade.get('signal', '?')} — {trade.get('question', '?')[:60]}\n"
+            f"<b>{mode} Trade Opened</b> l"
+            f"{trade.get('signal', '?')} -- {trade.get('question', '?')[:60]}\n"
             f"Entry: {trade.get('entry_price', 0):.3f} | ${trade.get('size_usd', 0):.2f}"
         )
 
@@ -149,7 +149,7 @@ class TelegramAlerts:
         self.send(
             f"<b>Trade Closed</b>\n"
             f"{trade.get('question', '?')[:60]}\n"
-            f"P&L: {emoji}${pnl:.2f} ({emoji}{trade.get('pnl_pct', 0):.1f}%)\n"
+            f"P&L: {emoji+${pnl:.2f} ({emoji}{trade.get('pnl_pct', 0):.1f}%)\n"
             f"Reason: {trade.get('close_reason', '?')}"
         )
 
@@ -194,7 +194,7 @@ class TelegramAlerts:
             f"Arb signals: {arb_count}\n"
             f"KL-Div signals: {div_count}\n"
             f"{'─' * 32}\n"
-            f"{time.strftime('%H:%M:%S')} — next scan in 2 min"
+            f"{time.strftime('%H:%M:%S')} -- next scan in 2 min"
         )
 
     def send_error(self, error_msg: str):
@@ -234,7 +234,7 @@ class TelegramAlerts:
                         if msg_id:
                             self._post("editMessageText", {
                                 "chat_id": self.chat_id, "message_id": msg_id,
-                                "text": f"<b>CONFIRMED</b> — {info['opp'].get('question','')[:60]}",
+                                "text": f"<b>CONFIRMED</b> -- {info['opp'].get('question','')[:60]}",
                                 "parse_mode": "HTML"
                             })
                     elif data.startswith("skip_"):
@@ -242,7 +242,7 @@ class TelegramAlerts:
                         if msg_id:
                             self._post("editMessageText", {
                                 "chat_id": self.chat_id, "message_id": msg_id,
-                                "text": f"<b>SKIPPED</b> — {info['opp'].get('question','')[:60]}",
+                                "text": f"<b>SKIPPED</b> -- {info['opp'].get('question','')[:60]}",
                                 "parse_mode": "HTML"
                             })
                 else:
@@ -262,11 +262,11 @@ class TelegramAlerts:
             elif text == "/help":
                 self.send(
                     "<b>Commands</b>\n"
-                    "/pnl — Performance summary\n"
-                    "/status — Risk & bot status\n"
-                    "/positions — Open positions\n"
-                    "/resume — Resume after halt\n"
-                    "/help — This message"
+                    "/pnl -- Performance summary\n"
+                    "/status -- Risk & bot status\n"
+                    "/positions -- Open positions\n"
+                    "/resume -- Resume after halt\n"
+                    "/help -- This message"
                 )
 
         return confirmed_trades

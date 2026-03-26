@@ -1,7 +1,7 @@
-# Prediction Market Quant Bot — Configuration
+# Prediction Market Quant Bot -- Configuration
 # =============================================
 # IMPORTANT: Fill in your API keys before running.
-# The bot starts in PAPER mode — no real money until you change it.
+# The bot starts in PAPER mode -- no real money until you change it.
 
 mode: paper  # paper | live (ONLY change to live after validated results)
 
@@ -17,12 +17,12 @@ kalshi:
 telegram:
   bot_token: "8677098190:AAHR9k7rUfuAQ0TfXhJzoxOt8KIopDplQiM"
   chat_id: "5063878233"
-  require_confirm: false   # CHANGED: was true — bot now auto-executes in paper mode
+  require_confirm: false   # CHANGED: was true -- bot now auto-executes in paper mode
   send_scan_summary: true  # Send periodic scan summaries
 
 coinbase:
   price_cache_ttl: 30        # Cache spot prices for 30 seconds
-  # No API key needed — public price data
+  # No API key needed -- public price data
 
 research:
   scrapecreators_api_key: ""  # Covers Reddit, TikTok, Instagram (scrapecreators.com)
@@ -57,5 +57,5 @@ risk:
 
 logging:
   trade_log: logs/trades.json
-  performance_log: logs/performance.json
+  PerLrmance_log: logs/performance.json
   verbose: true                   # Print detailed scan output

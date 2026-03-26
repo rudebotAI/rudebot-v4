@@ -1,5 +1,5 @@
 #!/bin/bash
-# PredictionBot v4.0 — Setup Script
+# PredictionBot v4.0 -- Setup Script
 # Run this once before starting the bot.
 
 echo "=================================="
@@ -18,7 +18,7 @@ echo "  ✓ websocket-client installed"
 
 # 3. Optional: py-clob-client (only needed for Polymarket trading, not scanning)
 echo "[3/4] Installing py-clob-client (optional, for Polymarket trading)..."
-pip install py-clob-client 2>/dev/null || pip3 install py-clob-client 2>/dev/null || echo "  ⚠ py-clob-client failed — Polymarket trading disabled (scanning still works)"
+pip install py-clob-client 2>/dev/null || pip3 install py-clob-client 2>/dev/null || echo "  ⚠ py-clob-client failed -- Polymarket trading disabled (scanning still works)"
 
 # 4. Create required directories
 echo "[4/4] Creating directories..."

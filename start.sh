@@ -1,5 +1,5 @@
 #!/bin/bash
-# ── Prediction Market Bot — One-Click Launcher ──
+# ── Prediction Market Bot -- One-Click Launcher ──
 # Usage: bash start.sh
 
 set -e

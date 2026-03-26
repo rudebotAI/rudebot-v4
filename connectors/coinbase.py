@@ -1,6 +1,6 @@
 """
-Coinbase Price Feed — Real-time spot prices and candles.
-Matches the diagram: Coinbase API → price → MCP plugin → Strategy engine.
+Coinbase Price Feed -- Real-time spot prices and candles.
+Matches the diagram: Coinbase API -> price -> MCP plugin -> Strategy engine.
 
 Uses Coinbase Advanced Trade API (v3) for candles with Binance fallback.
 Spot prices via Coinbase v2 public API.
@@ -18,8 +18,8 @@ logger = logging.getLogger(__name__)
 COINBASE_API = "https://api.coinbase.com/v2"
 COINBASE_ADVANCED = "https://api.coinbase.com/api/v3/brokerage"
 
-# Granularity mapping: seconds → Coinbase Advanced Trade API granularity strings
-_GRANU0ARITY_MAP = {
+# Granularity mapping: seconds -> Coinbase Advanced Trade API granularity strings
+_GRANULARITY_MAP = {
     60: "ONE_MINUTE",
     300: "FIVE_MINUTE",
     900: "FIFTEEN_MINUTE",
@@ -36,11 +36,11 @@ _BINANCE_INTERVAL_MAP = {
     3600: "1h", 7200: "2h", 21600: "6h", 86400: "1d",
 }
 
-# Map product IDs between*exchanges
+# Map product IDs between exchanges
 _BINANCE_SYMBOL_MAP = {
     "BTC-USD": "BTCUSDT",
     "ETH-USD": "ETHUSDT",
-    "SOL-SDD�: "SOLUSDT",
+    "SOL-USD": "SOLUSDT",
     "MATIC-USD": "MATICUSDT",
 }
 
@@ -76,16 +76,16 @@ class CoinbaseConnector:
         except Exception as e:
             if self._api_reachable is None:
                 self._api_reachable = False
-                logger.warning(f"Coinbase/Binance API unreachable — skipping: {e}")
+                logger.warning(f"Coinbase/Binance API unreachable -- skipping: {e}")
             else:
-                logger.debug(f"HTTP GET failed: {url[:80]} — {e}")
+                logger.debug(f"HTTP GET failed: {url[:80]} -- {e}")
             return None
 
     def get_spot_price(self, pair: str = "BTC-USD") -> Optional[float]:
-        """
+       """
         Get current spot price. Tries Coinbase v2, then Binance fallback.
         Cached for cache_ttl seconds.
-        """
+       """
         cache_key = f"spot_{pair}"
         if cache_key in self.cache:
             cached = self.cache[cache_key]
@@ -140,7 +140,7 @@ class CoinbaseConnector:
         return self.get_spot_price(pair)
 
     def get_candles(self, product_id: str = "BTC-USD", granularity: int = 300, limit: int = 50) -> list:
-        """
+       """
         Get OHLCV candles. Tries Coinbase Advanced Trade API, then Binance.
         Returns: list of [time, low, high, open, close, volume] (newest first).
         """
@@ -162,7 +162,7 @@ class CoinbaseConnector:
 
     def _coinbase_advanced_candles(self, product_id: str, granularity: int, limit: int) -> list:
         """Fetch candles from Coinbase Advanced Trade API (v3)."""
-        gran_str = _GRANULARITY_MAP.get(granularity)
+        gran_str = _GRANUTARITY_MAP.get(granularity)
         if not gran_str:
             gran_str = "FIVE_MINUTE"
 
@@ -218,7 +218,7 @@ class CoinbaseConnector:
         for k in data:
             try:
                 candles.append([
-                    int(k[0]) // 1000,  # ms → seconds
+                    int(k[0]) // 1000,  # ms -> seconds
                     float(k[3]),         # low
                     float(k[2]),         # high
                     float(k[1]),         # open
@@ -240,7 +240,7 @@ class CoinbaseConnector:
         if data and "lastPrice" in data:
             return {
                 "price": float(data.get("lastPrice", 0)),
-                "volume": float(data.get,"volume", 0)),
+                "volume": float(data.get("volume", 0)),
                 "bid": float(data.get("bidPrice", 0)),
                 "ask": float(data.get("askPrice", 0)),
                 "time": data.get("closeTime", ""),
@@ -250,7 +250,7 @@ class CoinbaseConnector:
         if data and "price" in data:
             return {
                 "price": float(data.get("price", 0)),
-                "volume": float(data.get,"volume", 0)),
+                "volume": float(data.get("volume", 0)),
                 "bid": float(data.get("bid", 0)),
                 "ask": float(data.get("ask", 0)),
                 "time": data.get("time", ""),
@@ -275,7 +275,7 @@ class CoinbaseConnector:
         Compute short-term price momentum from 5-min candles.
         Returns direction, % change, and volatility.
         Useful for crypto-related prediction market signals.
-        """
+       """
         candles = self.get_candles(product_id, granularity=300, limit=periods)
         if len(candles) < 2:
             return None

@@ -34,7 +34,7 @@ class PolymarketConnector:
         if self.client:
             return True
         if not self.private_key:
-            logger.warning("No Polymarket private key — running in read-only mode")
+            logger.warning("No Polymarket private key -- running in read-only mode")
             return False
         try:
             from py_clob_client.client import ClobClient
@@ -50,7 +50,7 @@ class PolymarketConnector:
             logger.info("Polymarket CLOB client initialized (authenticated)")
             return True
         except ImportError:
-            logger.warning("py-clob-client not installed — read-only mode")
+            logger.warning("py-clob-client not installed -- read-only mode")
             return False
         except Exception as e:
             logger.error(f"Failed to init Polymarket client: {e}")
@@ -59,7 +59,7 @@ class PolymarketConnector:
     def _throttle(self):
         """Simple rate limiter: 60 req/min for trading, 100 for public."""
         elapsed = time.time() - self._last_request
-        if elapsed < 0.7:  # ~85 req/min max
+        if elapsed < 0.7:  # 85 req/min max
             time.sleep(0.7 - elapsed)
         self._last_request = time.time()
 
@@ -79,22 +79,22 @@ class PolymarketConnector:
         except Exception as e:
             if self._api_reachable is None:
                 self._api_reachable = False
-                logger.warning(f"Polymarket API unreachable — skipping all calls: {e}")
+                logger.warning(f"Polymarket API unreachable -- skipping all calls: {e}")
             else:
-                logger.debug(f"Polymarket HTTP failed: {url[:60]} — {e}")
+                logger.debug(f"Polymarket HTTP failed: {url[:60]} -- {e}")
             return None
 
     # ── Market Data (public, no auth) ──
 
     def get_markets(self, limit=100, active=True) -> list:
         """Fetch active markets from Gamma API."""
-        url = f"{GAMMA_API}/markets?limit={limit}&active={'true' if active else 'false'}&closed=false"
+        url = f"{GAMMA_API=/markets?limit={limit}&active={'true' if active else 'false'}&closed=false"
         data = self._http_get(url)
         return data if isinstance(data, list) else []
 
     def get_market(self, condition_id: str) -> Optional[dict]:
         """Get details for a single market."""
-        url = f"{GAMMA_API}/markets?condition_id={condition_id}"
+        url = f"{GAMMA_API=/markets?condition_id={condition_id}"
         data = self._http_get(url)
         if isinstance(data, list) and data:
             return data[0]
@@ -110,12 +110,12 @@ class PolymarketConnector:
 
     def get_orderbook(self, token_id: str) -> Optional[dict]:
         """Get full orderbook for a token (public)."""
-        url = f"{CLOB_API}/book?token_id={token_id}"
+        url = f"{CLOB_API=/book?token_id={token_id}"
         return self._http_get(url)
 
     def get_midpoint(self, token_id: str) -> Optional[float]:
         """Get midpoint price for a token."""
-        url = f"{CLOB_API=/midpoint?token_id={token_id}"
+        url = f"{CLOB_API}/midpoint?token_id={token_id}"
         data = self._http_get(url)
         if data and "mid" in data:
             try:
@@ -126,7 +126,7 @@ class PolymarketConnector:
 
     def get_price(self, token_id: str, side: str = "buy") -> Optional[float]:
         """Get best price for a side (buy/sell)."""
-        url = f"{CLOB_API}/price?token_id={token_id}&side={side}"
+        url = f"{CLOB_API=/price?token_id={token_id}&side={side}"
         data = self._http_get(url)
         if data and "price" in data:
             try:
@@ -145,7 +145,7 @@ class PolymarketConnector:
     def place_order(self, token_id: str, side: str, price: float, size: float) -> Optional[dict]:
         """Place a limit order. Returns order dict or None."""
         if not self._init_client():
-            logger.error("Cannot place order — client not authenticated")
+            logger.error("Cannot place order -- client not authenticated")
             return None
         try:
             from py_clob_client.order_builder.constants import BUY, SELL
@@ -157,7 +157,7 @@ class PolymarketConnector:
                 "side": order_side,
             })
             result = self.client.post_order(order)
-            logger.info(f"Order placed: {side} {size} @ {price} — {result}")
+            logger.info(f"Order placed: {side} {size} @ {price} -- {result}")
             return result
         except Exception as e:
             logger.error(f"Order failed: {e}")
@@ -262,6 +262,6 @@ class PolymarketConnector:
         return enriched
 
     def is_connected(self) -> bool:
-        """Test APH COnTectivity."""
+        """Test API connectivity."""
         data = self._http_get(f"{CLOB_API}/time")
         return data is not None

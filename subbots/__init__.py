@@ -1,1 +1,1 @@
-from .subbots.base import SubBotBase
+# Sub-bots: autonomous data-gathering agents for the prediction bot framework

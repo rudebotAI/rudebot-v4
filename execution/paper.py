@@ -1,7 +1,7 @@
 """
-Paper Trading Engine — Simulates trades without real money.
+Paper Trading Engine -- Simulates trades without real money.
 Tracks entries, exits, P&L, and win rate.
-"""
+b""
 
 import json
 import hashlib
@@ -171,12 +171,12 @@ class PaperTrader:
             "avg_pnl": round(sum(pnls) / len(pnls), 2) if pnls else 0,
             "best_trade": round(max(pnls), 2) if pnls else 0,
             "worst_trade": round(min(pnls), 2) if pnls else 0,
-            "open_positions": len(self.trades.get(" open", [])),
+            "open_positions": len(self.trades.get("open", [])),
             "skipped": len(self.trades.get("skipped", [])),
         }
 
     def save_daily_performance(self):
-        """Append today'f's performance to the daily log."""
+        """Append today's performance to the daily log."""
         perf = self.get_performance()
         perf["date"] = datetime.now(timezone.utc).date().isoformat()
 

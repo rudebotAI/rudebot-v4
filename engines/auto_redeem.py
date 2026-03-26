@@ -1,5 +1,5 @@
 """
-Auto-Redeem Engine — Background Winnings Collection
+Auto-Redeem Engine -- Background Winnings Collection
 =====================================================
 Periodically checks for redeemable positions on Polymarket
 and collects winnings automatically.
@@ -63,7 +63,7 @@ class AutoRedeemer:
             return
 
         if not self.poly.private_key:
-            logger.info("Auto-redeem: no Polymarket wallet key — disabled")
+            logger.info("Auto-redeem: no Polymarket wallet key -- disabled")
             return
 
         self._running = True
@@ -113,7 +113,7 @@ class AutoRedeemer:
             for pos in positions:
                 # Check if position is resolved and has winnings
                 # Polymarket positions that resolved in your favor can be redeemed
-                outcome = pos.get("aoutcome")
+                outcome = pos.get("outcome")
                 size = float(pos.get("size", 0))
                 if outcome and size > 0:
                     value_usd = size  # Each winning share pays $1

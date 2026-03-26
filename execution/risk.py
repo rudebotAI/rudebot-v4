@@ -1,5 +1,5 @@
 """
-Risk Manager — Circuit breakers, position limits, drawdown stops.
+Risk Manager -- Circuit breakers, position limits, drawdown stops.
 Protects capital by enforcing hard limits on losses and exposure.
 """
 
@@ -33,10 +33,10 @@ class RiskManager:
         """Reset daily counters at midnight UTC."""
         now = datetime.now(timezone.utc).date()
         if now != self.today:
-            logger.info(f"New day — resetting daily P&L (was ${self.daily_pnl:.2f})")
+            logger.info(f"New day -- resetting daily P&L (was ${self.daily_pnl:.2f})")
             self.daily_pnl = 0.0
             self.today = now
-            # Don't auto-unhalt — manual or cooldown-based
+            # Don't auto-unhalt -- manual or cooldown-based
 
     def can_trade(self) -> tuple:
         """
@@ -51,7 +51,7 @@ class RiskManager:
                 remaining = (self.halt_until - datetime.now(timezone.utc)).seconds // 60
                 return False, f"Halted: {self.halt_reason} ({remaining}m remaining)"
             else:
-                logger.info("Cooldown expired — resuming trading")
+                logger.info("Cooldown expired -- resuming trading")
                 self.halted = False
                 self.halt_reason = ""
                 self.halt_until = None
@@ -115,7 +115,7 @@ class RiskManager:
         self.halted = True
         self.halt_reason = reason
         self.halt_until = datetime.now(timezone.utc) + timedelta(minutes=self.cooldown_min)
-        logger.critical(f"CIRCUIT BREAKER: {reason} — halted for {self.cooldown_min}m")
+        logger.critical(f"CIRCUIT BREAKER: {reason} -- halted for {self.cooldown_min}m")
 
     def manual_resume(self):
         """Manually resume trading after halt."""
