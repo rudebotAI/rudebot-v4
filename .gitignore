@@ -1,9 +1,17 @@
-node_modules/
-build/
+# Secrets
 .env
-.env.local
-.env.production.local
-.DS_Store
+
+# Logs & state
+logs/
 *.log
-npm-debug.log*
-.vercel
+safety_state.json
+EMERGENCY_STOP
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# OS
+.DS_Store

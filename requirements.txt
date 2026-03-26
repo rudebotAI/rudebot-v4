@@ -1,4 +1,4 @@
-# Prediction Market Quant Bot â Dependencies
+# Prediction Market Quant Bot — Dependencies
 pyyaml>=6.0
 requests>=2.31
 certifi>=2023.0
