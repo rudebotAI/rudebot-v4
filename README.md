@@ -1,11 +1,11 @@
 # Prediction Market Quant Bot
 
 Scans Polymarket + Kalshi for +EV opportunities using a full quant stack:
-- **EV Gap Detection** -- finds mispriced markets
+- **EV GAP Detection** -- finds mispriced markets
 - **Kelly Criterion** -- optimal position sizing (quarter-Kelly for safety)
 - **LMSR Price Impact** -- flags thin liquidity pools
 - **KL-Divergence** -- cross-platform price discrepancy scanner
-- **Bayesian Updates** -- adjusts probabilities from volume/momentum signals
+- **Bayesian updates** -- adjusts probabilities from volume/momentum signals
 - **Cross-Platform Arbitrage** -- detects same-event price gaps
 
 Runs 24/7 in **paper mode** by default. Sends Telegram alerts with confirm/skip buttons before any trade.
@@ -76,8 +76,8 @@ Each scan cycle:
 
 ```
 prediction-bot/
-├── main.py                   # Entry point + orchestrator 
-├── config.yaml               # All settings (API keys, risk params)
+├── main.py                  # Entry point + orchestrator
+├── config.yaml              # All settings (API keys, risk params)
 ├── requirements.txt
 ├── connectors/
 │   ├── polymarket.py        # Polymarket CLOB API wrapper
@@ -105,9 +105,9 @@ prediction-bot/
 ## Safety Features
 
 | Feature | Default | Purpose |
-|----------|------------|---------|
+|---------|---------|---------|
 | Paper mode | `mode: paper` | No real money until you flip it |
-| Telegram confirm | `require_confirm: true` | Mutt approve every trade |
+| Telegram confirm | `require_confirm: true` | Must approve every trade |
 | Quarter-Kelly | `kelly_fraction: 0.25` | Conservative sizing |
 | Max position | `$10` | Per-trade cap during testing |
 | Daily loss limit | `$20` | Auto-stops bot |
@@ -121,14 +121,14 @@ prediction-bot/
 
 **Only after paper results show consistent edge:**
 
-1. Fund Polymarket wallet (Poly gon USDC) and/or Kalshi account
+1. Fund Polymarket wallet (Polygon USDC) and/or Kalshi account
 2. Add credentials to `config.yaml`
 3. Change `mode: live`
 4. Keep `require_confirm: true` initially
 5. Start with minimum sizes ($1-2 per trade)
 6. Monitor via Telegram for at least a week before increasing size
 
-┘�η **Real money = real risk.** The bot makes no guarantees of profit.
+⚠️ **Real money = real risk.** The bot makes no guarantees of profit.
 
 ---
 
