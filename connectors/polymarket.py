@@ -59,7 +59,7 @@ class PolymarketConnector:
     def _throttle(self):
         """Simple rate limiter: 60 req/min for trading, 100 for public."""
         elapsed = time.time() - self._last_request
-        if elapsed < 0.7:  # 85 req/min max
+        if elapsed < 0.7:  # ~85 req/min max
             time.sleep(0.7 - elapsed)
         self._last_request = time.time()
 
@@ -88,13 +88,13 @@ class PolymarketConnector:
 
     def get_markets(self, limit=100, active=True) -> list:
         """Fetch active markets from Gamma API."""
-        url = f"{GAMMA_API=/markets?limit={limit}&active={'true' if active else 'false'}&closed=false"
+        url = f"{GAMMA_API}/markets?limit={limit}&active={'true' if active else 'false'}&closed=false"
         data = self._http_get(url)
         return data if isinstance(data, list) else []
 
     def get_market(self, condition_id: str) -> Optional[dict]:
         """Get details for a single market."""
-        url = f"{GAMMA_API=/markets?condition_id={condition_id}"
+        url = f"{GAMMA_API}/markets?condition_id={condition_id}"
         data = self._http_get(url)
         if isinstance(data, list) and data:
             return data[0]
@@ -110,7 +110,7 @@ class PolymarketConnector:
 
     def get_orderbook(self, token_id: str) -> Optional[dict]:
         """Get full orderbook for a token (public)."""
-        url = f"{CLOB_API=/book?token_id={token_id}"
+        url = f"{CLOB_API}/book?token_id={token_id}"
         return self._http_get(url)
 
     def get_midpoint(self, token_id: str) -> Optional[float]:
@@ -126,7 +126,7 @@ class PolymarketConnector:
 
     def get_price(self, token_id: str, side: str = "buy") -> Optional[float]:
         """Get best price for a side (buy/sell)."""
-        url = f"{CLOB_API=/price?token_id={token_id}&side={side}"
+        url = f"{CLOB_API}/price?token_id={token_id}&side={side}"
         data = self._http_get(url)
         if data and "price" in data:
             try:
