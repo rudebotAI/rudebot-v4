@@ -89,7 +89,7 @@ class TelegramAlerts:
         question = opp.get("question", "Unknown")[:80]
 
         msg = (
-            f"<b>Signal Detected</b> l"
+            f"<b>Signal Detected</b>\n"
             f"{'─' * 32}\n"
             f"<b>Market:</b> {question}\n"
             f"<b>Platform:</b> {platform.title()}\n"
@@ -137,7 +137,7 @@ class TelegramAlerts:
         """Notify that a trade was opened."""
         mode = "PAPER" if trade.get("status") == "open" else "LIVE"
         self.send(
-            f"<b>{mode} Trade Opened</b> l"
+            f"<b>{mode} Trade Opened</b>\n"
             f"{trade.get('signal', '?')} -- {trade.get('question', '?')[:60]}\n"
             f"Entry: {trade.get('entry_price', 0):.3f} | ${trade.get('size_usd', 0):.2f}"
         )
@@ -149,7 +149,7 @@ class TelegramAlerts:
         self.send(
             f"<b>Trade Closed</b>\n"
             f"{trade.get('question', '?')[:60]}\n"
-            f"P&L: {emoji+${pnl:.2f} ({emoji}{trade.get('pnl_pct', 0):.1f}%)\n"
+            f"P&L: {emoji}${pnl:.2f} ({emoji}{trade.get('pnl_pct', 0):.1f}%)\n"
             f"Reason: {trade.get('close_reason', '?')}"
         )
 
