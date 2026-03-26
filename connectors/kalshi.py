@@ -12,7 +12,7 @@ from typing import Optional
 
 logger = logging.getLogger(__name__)
 
-ALTSHI_API = "https://api.elections.kalshi.com/trade-api/v2"
+KALSHI_API = "https://api.elections.kalshi.com/trade-api/v2"
 
 
 class KalshiConnector:
@@ -83,7 +83,7 @@ class KalshiConnector:
     # ── Auth ──
 
     def login(self) -> bool:
-       """Authenticate and get bearer token."""
+        """Authenticate and get bearer token."""
         if not self.email or not self.api_key:
             logger.warning("No Kalshi credentials -- read-only mode (public markets only)")
             return False
@@ -179,7 +179,7 @@ class KalshiConnector:
         Fetch markets with price data. Uses last_price from the /markets
         endpoint to avoid N+1 orderbook calls. Only fetches orderbook
         for the top candidates (by volume) to get accurate spread data.
-       """
+        """
         markets = self.get_markets(limit=limit)
         if not markets:
             logger.warning("Kalshi returned 0 markets")
@@ -213,7 +213,7 @@ class KalshiConnector:
                     "question": m.get("title", ""),
                     "market_id": market_id,
                     "event_ticker": m.get("event_ticker", ""),
-                    "yes_price": if yes_price else None,
+                    "yes_price": yes_price,
                     "no_price": no_price,
                     "yes_bid": yes_bid,
                     "yes_ask": yes_ask,
